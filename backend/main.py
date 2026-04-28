@@ -116,14 +116,27 @@ def read_root():
 
 # 全件取得
 @app.get("/skills", response_model=list[SkillResponse])
-def get_all_skills(db: Session = Depends(get_db)):
-    return db.query(models.Skill).all()
+def get_all_skills(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),  # 🆕
+):
+    # 自分のスキルだけ返す
+    return db.query(models.Skill).filter(
+        models.Skill.owner_id == current_user.id
+    ).all()
 
 
 # 1件取得
 @app.get("/skills/{skill_id}", response_model=SkillResponse)
-def get_skill(skill_id: int, db: Session = Depends(get_db)):
-    skill = db.query(models.Skill).filter(models.Skill.id == skill_id).first()
+def get_skill(
+    skill_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),  # 🆕
+):
+    skill = db.query(models.Skill).filter(
+        models.Skill.id == skill_id,
+        models.Skill.owner_id == current_user.id,  # 🆕 自分のスキルだけ
+    ).first()
     if not skill:
         raise HTTPException(status_code=404, detail="スキルが見つかりません")
     return skill
@@ -131,8 +144,15 @@ def get_skill(skill_id: int, db: Session = Depends(get_db)):
 
 # 新規登録
 @app.post("/skills", response_model=SkillResponse)
-def create_skill(skill: SkillCreate, db: Session = Depends(get_db)):
-    new_skill = models.Skill(**skill.model_dump())
+def create_skill(
+    skill: SkillCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),  # 🆕
+):
+    new_skill = models.Skill(
+        **skill.model_dump(),
+        owner_id=current_user.id,  # 🆕 ログインユーザーのIDをセット
+    )
     db.add(new_skill)
     db.commit()
     db.refresh(new_skill)
@@ -141,8 +161,16 @@ def create_skill(skill: SkillCreate, db: Session = Depends(get_db)):
 
 # 更新
 @app.put("/skills/{skill_id}", response_model=SkillResponse)
-def update_skill(skill_id: int, skill: SkillCreate, db: Session = Depends(get_db)):
-    target = db.query(models.Skill).filter(models.Skill.id == skill_id).first()
+def update_skill(
+    skill_id: int,
+    skill: SkillCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),  # 🆕
+):
+    target = db.query(models.Skill).filter(
+        models.Skill.id == skill_id,
+        models.Skill.owner_id == current_user.id,  # 🆕
+    ).first()
     if not target:
         raise HTTPException(status_code=404, detail="スキルが見つかりません")
     target.name = skill.name
@@ -155,8 +183,15 @@ def update_skill(skill_id: int, skill: SkillCreate, db: Session = Depends(get_db
 
 # 削除
 @app.delete("/skills/{skill_id}")
-def delete_skill(skill_id: int, db: Session = Depends(get_db)):
-    target = db.query(models.Skill).filter(models.Skill.id == skill_id).first()
+def delete_skill(
+    skill_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),  # 🆕
+):
+    target = db.query(models.Skill).filter(
+        models.Skill.id == skill_id,
+        models.Skill.owner_id == current_user.id,  # 🆕
+    ).first()
     if not target:
         raise HTTPException(status_code=404, detail="スキルが見つかりません")
     db.delete(target)
