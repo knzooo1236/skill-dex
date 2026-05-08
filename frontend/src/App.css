@@ -122,6 +122,18 @@ h1 {
   transform: scale(1.05);
 }
 
+.edit-input {
+  background: #2e3440;
+  border: 1px solid #88c0d0;   /* 編集中をアクセント水色に */
+  border-radius: 6px;
+  color: #eceff4;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.95rem;
+  width: 100%;
+  margin-bottom: 0.5rem;
+  box-sizing: border-box;
+}
+
 /* 認証画面 */
 .auth-container {
   min-height: 100vh;
@@ -249,6 +261,32 @@ h1 {
   position: relative;  /* 削除ボタン配置のため */
 }
 
+.edit-button {
+  position: absolute;
+  top: 8px;
+  right: 44px;        /* 削除ボタンの隣 */
+  background: transparent;
+  color: #88c0d0;     /* Nordの水色（編集はポジティブ操作） */
+  border: 1px solid transparent;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  padding: 0;
+  line-height: 1;
+}
+
+.edit-button:hover {
+  background: rgba(136, 192, 208, 0.15);
+  border-color: #88c0d0;
+  transform: scale(1.1);
+}
+
 .delete-button {
   position: absolute;
   top: 8px;
@@ -274,4 +312,20 @@ h1 {
   background: rgba(191, 97, 106, 0.15);
   border-color: #bf616a;
   transform: scale(1.1);
+}
+
+.cancel-button {
+  background: transparent;
+  color: #d8dee9;
+  border: 1px solid #4c566a;
+  border-radius: 6px;
+  padding: 0.6rem 1.5rem;
+  font-weight: bold;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cancel-button:hover {
+  background: rgba(216, 222, 233, 0.1);
 }

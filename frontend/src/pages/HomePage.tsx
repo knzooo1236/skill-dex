@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { getSkills, createSkill, deleteSkill } from '../api/client'
+import { getSkills, createSkill, deleteSkill, updateSkill } from '../api/client'
 import type { Skill } from '../types'
 
 function HomePage() {
@@ -12,6 +12,12 @@ function HomePage() {
   const [formName, setFormName] = useState('')
   const [formLevel, setFormLevel] = useState(1)
   const [formCategory, setFormCategory] = useState('')
+
+  const [editingId, setEditingId] = useState<number | null>(null)
+  // 既存の登録フォーム用のもあるけど、別にしたほうがクリーン
+  const [editName, setEditName] = useState('')
+  const [editLevel, setEditLevel] = useState(1)
+  const [editCategory, setEditCategory] = useState('')
 
   const { username, logout } = useAuth()
   const navigate = useNavigate()
@@ -47,6 +53,38 @@ function HomePage() {
       alert(`登録失敗: ${(err as Error).message}`)
     }
   }
+
+  const handleEditClick = (skill: Skill) => {
+    setEditingId(skill.id)         // 編集モードON
+    setEditName(skill.name)        // 現在の値をフォームにセット
+    setEditLevel(skill.level)
+    setEditCategory(skill.category)
+  }
+
+  const handleEditCancel = () => {
+    setEditingId(null)
+    setEditName('')
+    setEditLevel(1)
+    setEditCategory('')
+  }            
+
+  const handleEditSave = async () => {
+  if (editingId === null) return
+  
+  // 🆕 バリデーション
+  if (!editName || !editCategory) {
+    alert('名前とカテゴリは必須です！')
+    return
+  }
+  
+  try {
+    const updated = await updateSkill(editingId, editName, editLevel, editCategory)
+    setSkills(skills.map(skill => skill.id === editingId ? updated : skill))
+    setEditingId(null)
+  } catch (err) {
+    alert(`更新失敗: ${(err as Error).message}`)
+  }
+}
 
   const handleDelete = async (skillId: number, skillName: string) => {
     // 確認ダイアログ
@@ -115,29 +153,82 @@ function HomePage() {
         </div>
       </form>
 
+
+
       <div className="skill-list">
-        {skills.map((skill) => (
-          <div key={skill.id} className="skill-card">
-            <button
-              onClick={() => handleDelete(skill.id, skill.name)}
-              className="delete-button"
-              title="削除"
-            >
-              ×
-            </button>
-            <h2>{skill.name}</h2>
-            <p className="category">{skill.category}</p>
-            <div className="level-bar">
-              <div
-                className="level-fill"
-                style={{ width: `${skill.level * 20}%` }}
+      {skills.map((skill) => (
+        <div key={skill.id} className="skill-card">
+          {editingId === skill.id ? (
+            // ===== 編集モード =====
+            <>
+              {/* TODO: スキル名の input */}
+              <input
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="edit-input"
               />
-            </div>
-            <p className="level-text">Lv.{skill.level}</p>
-          </div>
-        ))}
+              
+              <select
+            value={editLevel}
+            onChange={(e) => setEditLevel(Number(e.target.value))}
+            className="edit-input"
+          >
+            <option value={1}>Lv.1</option>
+            <option value={2}>Lv.2</option>
+            <option value={3}>Lv.3</option>
+            <option value={4}>Lv.4</option>
+            <option value={5}>Lv.5</option>
+          </select>
+          <input
+            type="text"
+            value={editCategory}
+            onChange={(e) => setEditCategory(e.target.value)}
+            className="edit-input"
+          />
+
+              
+              <button onClick={handleEditSave} className="form-button">
+                保存
+              </button>
+              
+              <button onClick={handleEditCancel} className="cancel-button">
+                キャンセル
+              </button>
+            </>
+          ) : (
+            // ===== 通常モード =====
+            <>
+              <button
+                onClick={() => handleDelete(skill.id, skill.name)}
+                className="delete-button"
+                title="削除"
+              >
+                ×
+              </button>
+              
+              <button
+                onClick={() => handleEditClick(skill)}
+                className="edit-button"
+                title="編集"
+              >
+                ✏
+              </button>
+              <h2>{skill.name}</h2>
+              <p className="category">{skill.category}</p>
+              <div className="level-bar">
+                <div
+                  className="level-fill"
+                  style={{ width: `${skill.level * 20}%` }}
+                />
+              </div>
+              <p className="level-text">Lv.{skill.level}</p>
+            </>
+          )}
+        </div>
+      ))}
       </div>
-    </div>
+  </div>
   )
 }
 

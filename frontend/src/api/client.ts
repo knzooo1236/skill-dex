@@ -71,6 +71,16 @@ export const createSkill = async (name: string, level: number, category: string)
   return res.json()
 }
 
+export const updateSkill = async (skillId: number, name: string, level: number, category: string) => {
+  const res = await fetch(`${API_BASE}/skills/${skillId}`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ name, level, category }),
+  })
+  if (!res.ok) throw new Error('スキル更新失敗')
+  return res.json()
+}
+
 export const deleteSkill = async (skillId: number) => {
   const res = await fetch(`${API_BASE}/skills/${skillId}`, {
     method: 'DELETE',
