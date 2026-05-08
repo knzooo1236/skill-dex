@@ -115,6 +115,7 @@ function HomePage() {
         <h1>🎮 スキル図鑑</h1>
         <div className="user-info">
           <span>👤 {username}</span>
+          <span>📚 登録スキル数：{skills.length}個</span>
           <button onClick={handleLogout} className="logout-button">
             ログアウト
           </button>
